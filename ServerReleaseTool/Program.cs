@@ -1,4 +1,6 @@
 ﻿using Min_Helpers;
+using Min_Helpers.LogHelper;
+using Min_Helpers.PrintHelper;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -20,28 +22,33 @@ namespace ServerReleaseTool
 {
     class Program
     {
+        static Print PrintService { get; set; } = null;
+        static Log LogService { get; set; } = null;
+
         [STAThread]
         static int Main(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
 
-            ConsoleHelper.Initialize();
-
             try
             {
+                LogService = new Log();
+                PrintService = new Print(LogService);
+
+                LogService.Write("");
+                PrintService.Log("App Start", Print.EMode.info);
+
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
                 if (dialog.ShowDialog() != DialogResult.OK)
-                {
                     return 0;
-                }
 
                 string basePath = dialog.SelectedPath;
                 string workspacePath = $"{basePath}\\workspace";
                 string nsisPath = $"{workspacePath}\\nsis";
 
-                ConsoleHelper.Write("Project Folder: ", ConsoleHelper.EMode.info);
-                ConsoleHelper.WriteLine(basePath, ConsoleHelper.EMode.message);
+                PrintService.Write("Project Folder: ", Print.EMode.info);
+                PrintService.WriteLine(basePath, Print.EMode.message);
 
                 if (!Directory.Exists(workspacePath))
                 {
@@ -62,20 +69,20 @@ namespace ServerReleaseTool
                 string projectName = packageJson["config"]["displayname"].ToString();
                 string projectVersion = packageJson["version"].ToString();
 
-                ConsoleHelper.Write("Project Name: ", ConsoleHelper.EMode.info);
-                ConsoleHelper.WriteLine(projectName, ConsoleHelper.EMode.message);
+                PrintService.Write("Project Name: ", Print.EMode.info);
+                PrintService.WriteLine(projectName, Print.EMode.message);
 
-                ConsoleHelper.Write("Project Version: ", ConsoleHelper.EMode.info);
-                ConsoleHelper.WriteLine(projectVersion, ConsoleHelper.EMode.message);
+                PrintService.Write("Project Version: ", Print.EMode.info);
+                PrintService.WriteLine(projectVersion, Print.EMode.message);
 
-                ConsoleHelper.NewLine();
+                PrintService.NewLine();
 
-                ConsoleHelper.Write("Please Input New Verson: ", ConsoleHelper.EMode.question);
+                PrintService.Write("Please Input New Verson: ", Print.EMode.question);
                 string projectNewVersion = Console.ReadLine();
 
-                ConsoleHelper.NewLine();
+                PrintService.NewLine();
 
-                ConsoleHelper.Write("Build to NSIS Installer? [y/N] ", ConsoleHelper.EMode.question);
+                PrintService.Write("Build to NSIS Installer? [y/N] ", Print.EMode.question);
                 string build = Console.ReadLine();
                 bool isBuild = !(string.IsNullOrEmpty(build) || build.ToLower() == "n" || build.ToLower() == "no");
 
@@ -96,7 +103,7 @@ namespace ServerReleaseTool
                         string input = File.ReadAllText(paths[i]);
                         string content = new Regex($"\"version\": \"{projectVersion}\"").Replace(input, $"\"version\": \"{projectNewVersion}\"", 1);
                         File.WriteAllText(paths[i], content);
-                        ConsoleHelper.WriteLine($"Update \"{path}\" Success", ConsoleHelper.EMode.success);
+                        PrintService.WriteLine($"Update \"{path}\" Success", Print.EMode.success);
                     }
                 }
 
@@ -111,11 +118,11 @@ namespace ServerReleaseTool
                         string input = File.ReadAllText(paths[i]);
                         string content = new Regex($"!define PRODUCT_VERSION \"{projectVersion}\"").Replace(input, $"!define PRODUCT_VERSION \"{projectNewVersion}\"", 1);
                         File.WriteAllText(paths[i], content);
-                        ConsoleHelper.WriteLine($"Update \"{path}\" Success", ConsoleHelper.EMode.success);
+                        PrintService.WriteLine($"Update \"{path}\" Success", Print.EMode.success);
                     }
                 }
 
-                ConsoleHelper.NewLine();
+                PrintService.NewLine();
 
                 using (Process process = new Process())
                 {
@@ -147,10 +154,10 @@ namespace ServerReleaseTool
                     process.StandardInput.WriteLine($"git commit -m \"v{projectNewVersion}\"");
                     Thread.Sleep(10);
 
-                    ConsoleHelper.WriteLine($"Git Commit Success", ConsoleHelper.EMode.success);
+                    PrintService.WriteLine($"Git Commit Success", Print.EMode.success);
                     Thread.Sleep(10);
 
-                    ConsoleHelper.NewLine();
+                    PrintService.NewLine();
 
                     string count = "5000";
 
@@ -161,7 +168,7 @@ namespace ServerReleaseTool
                     process.StandardInput.WriteLine($"git commit --amend --no-edit");
                     Thread.Sleep(10);
 
-                    ConsoleHelper.WriteLine($"Git Log Export Success", ConsoleHelper.EMode.success);
+                    PrintService.WriteLine($"Git Log Export Success", Print.EMode.success);
                 }
 
                 if (isBuild)
@@ -186,7 +193,7 @@ namespace ServerReleaseTool
 
                                 using (Process process = new Process())
                                 {
-                                    ConsoleHelper.WriteLine($"Build \"{path}\" Start", ConsoleHelper.EMode.info);
+                                    PrintService.WriteLine($"Build \"{path}\" Start", Print.EMode.info);
 
                                     process.StartInfo.FileName = makensis;
                                     process.StartInfo.Arguments = nsis;
@@ -204,7 +211,7 @@ namespace ServerReleaseTool
                                         .DistinctUntilChanged()
                                         .Subscribe((x) =>
                                         {
-                                            ConsoleHelper.WriteLine(x, ConsoleHelper.EMode.message);
+                                            PrintService.WriteLine(x, Print.EMode.message);
                                         });
                                     Observable
                                         .FromEventPattern<DataReceivedEventArgs>(process, "ErrorDataReceived")
@@ -213,7 +220,7 @@ namespace ServerReleaseTool
                                         .DistinctUntilChanged()
                                         .Subscribe((x) =>
                                         {
-                                            ConsoleHelper.WriteLine(x, ConsoleHelper.EMode.error);
+                                            PrintService.WriteLine(x, Print.EMode.error);
                                             isError = true;
                                         });
 
@@ -229,7 +236,7 @@ namespace ServerReleaseTool
                                         throw new Exception($"Build \"{path}\" Fail");
                                     }
 
-                                    ConsoleHelper.WriteLine($"Build \"{path}\" Success", ConsoleHelper.EMode.success);
+                                    PrintService.WriteLine($"Build \"{path}\" Success", Print.EMode.success);
                                 }
                             }
 
@@ -242,7 +249,7 @@ namespace ServerReleaseTool
                         }
                     }
 
-                    ConsoleHelper.NewLine();
+                    PrintService.NewLine();
 
                     using (CancellationTokenSource tokenSource = new CancellationTokenSource())
                     {
@@ -258,7 +265,7 @@ namespace ServerReleaseTool
 
                                 using (Process process = new Process())
                                 {
-                                    ConsoleHelper.WriteLine($"Build \"{path}\" Start", ConsoleHelper.EMode.info);
+                                    PrintService.WriteLine($"Build \"{path}\" Start", Print.EMode.info);
 
                                     process.StartInfo.FileName = makensis;
                                     process.StartInfo.Arguments = nsisWorkspace;
@@ -276,7 +283,7 @@ namespace ServerReleaseTool
                                         .DistinctUntilChanged()
                                         .Subscribe((x) =>
                                         {
-                                            ConsoleHelper.WriteLine(x, ConsoleHelper.EMode.message);
+                                            PrintService.WriteLine(x, Print.EMode.message);
                                         });
                                     Observable
                                         .FromEventPattern<DataReceivedEventArgs>(process, "ErrorDataReceived")
@@ -285,7 +292,7 @@ namespace ServerReleaseTool
                                         .DistinctUntilChanged()
                                         .Subscribe((x) =>
                                         {
-                                            ConsoleHelper.WriteLine(x, ConsoleHelper.EMode.error);
+                                            PrintService.WriteLine(x, Print.EMode.error);
                                             isError = true;
                                         });
 
@@ -301,7 +308,7 @@ namespace ServerReleaseTool
                                         throw new Exception($"Build \"{path}\" Fail");
                                     }
 
-                                    ConsoleHelper.WriteLine($"Build \"{path}\" Success", ConsoleHelper.EMode.success);
+                                    PrintService.WriteLine($"Build \"{path}\" Success", Print.EMode.success);
                                 }
                             }
 
@@ -314,7 +321,7 @@ namespace ServerReleaseTool
                         }
                     }
 
-                    ConsoleHelper.NewLine();
+                    PrintService.NewLine();
 
                     using (CancellationTokenSource tokenSource = new CancellationTokenSource())
                     {
@@ -330,7 +337,7 @@ namespace ServerReleaseTool
 
                                 using (Process process = new Process())
                                 {
-                                    ConsoleHelper.WriteLine($"Build \"{path}\" Start", ConsoleHelper.EMode.info);
+                                    PrintService.WriteLine($"Build \"{path}\" Start", Print.EMode.info);
 
                                     process.StartInfo.FileName = makensis;
                                     process.StartInfo.Arguments = nsisFull;
@@ -348,7 +355,7 @@ namespace ServerReleaseTool
                                         .DistinctUntilChanged()
                                         .Subscribe((x) =>
                                         {
-                                            ConsoleHelper.WriteLine(x, ConsoleHelper.EMode.message);
+                                            PrintService.WriteLine(x, Print.EMode.message);
                                         });
                                     Observable
                                         .FromEventPattern<DataReceivedEventArgs>(process, "ErrorDataReceived")
@@ -357,7 +364,7 @@ namespace ServerReleaseTool
                                         .DistinctUntilChanged()
                                         .Subscribe((x) =>
                                         {
-                                            ConsoleHelper.WriteLine(x, ConsoleHelper.EMode.error);
+                                            PrintService.WriteLine(x, Print.EMode.error);
                                             isError = true;
                                         });
 
@@ -373,7 +380,7 @@ namespace ServerReleaseTool
                                         throw new Exception($"Build \"{path}\" Fail");
                                     }
 
-                                    ConsoleHelper.WriteLine($"Build \"{path}\" Success", ConsoleHelper.EMode.success);
+                                    PrintService.WriteLine($"Build \"{path}\" Success", Print.EMode.success);
                                 }
                             }
 
@@ -386,25 +393,21 @@ namespace ServerReleaseTool
                         }
                     }
 
-                    ConsoleHelper.NewLine();
+                    PrintService.NewLine();
                 }
 
                 Process.Start($"{nsisPath}//Release");
             }
             catch (Exception ex)
             {
-                ConsoleHelper.NewLine();
-
                 ex = ExceptionHelper.GetReal(ex);
-                ConsoleHelper.WriteLine($"Error: {ex.Message}", ConsoleHelper.EMode.error);
+                PrintService.Log($"App Error, {ex.Message}", Print.EMode.error);
             }
             finally
             {
-                ConsoleHelper.NewLine();
-
-                ConsoleHelper.WriteLine("Please Enter Any Key to Exit", ConsoleHelper.EMode.info);
-
+                PrintService.Log("App End", Print.EMode.info);
                 Console.ReadKey();
+
                 Environment.Exit(0);
             }
 
