@@ -394,9 +394,9 @@ namespace ServerReleaseTool
                     }
 
                     PrintService.NewLine();
-                }
 
-                Process.Start($"{nsisPath}//Release");
+                    Process.Start($"{nsisPath}//Release");
+                }
             }
             catch (Exception ex)
             {
