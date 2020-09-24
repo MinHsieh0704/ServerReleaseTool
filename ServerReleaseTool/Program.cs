@@ -39,6 +39,8 @@ namespace ServerReleaseTool
                 LogService.Write("");
                 PrintService.Log("App Start", Print.EMode.info);
 
+                PrintService.NewLine();
+
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
                 if (dialog.ShowDialog() != DialogResult.OK)
                     return 0;
@@ -79,12 +81,12 @@ namespace ServerReleaseTool
 
                 PrintService.Write("Please Input New Verson: ", Print.EMode.question);
                 string projectNewVersion = Console.ReadLine();
-
                 PrintService.NewLine();
 
                 PrintService.Write("Build to NSIS Installer? [y/N] ", Print.EMode.question);
                 string build = Console.ReadLine();
                 bool isBuild = !(string.IsNullOrEmpty(build) || build.ToLower() == "n" || build.ToLower() == "no");
+                PrintService.NewLine();
 
                 List<string> paths = new List<string>()
                 {
@@ -157,7 +159,6 @@ namespace ServerReleaseTool
                     PrintService.WriteLine($"Git Commit Success", Print.EMode.success);
                     Thread.Sleep(10);
 
-                    PrintService.NewLine();
 
                     string count = "5000";
 
@@ -397,6 +398,8 @@ namespace ServerReleaseTool
 
                     Process.Start($"{nsisPath}//Release");
                 }
+
+                PrintService.NewLine();
             }
             catch (Exception ex)
             {
