@@ -159,11 +159,13 @@ namespace ServerReleaseTool
                     PrintService.WriteLine($"Git Commit Success", Print.EMode.success);
                     Thread.Sleep(10);
 
+                    if (File.Exists($"{workspacePath}\\change.log"))
+                        File.Delete($"{workspacePath}\\change.log");
 
                     string count = "5000";
 
                     process.StandardInput.WriteLine($"git log --date=format:\"%Y/%m/%d %H:%M:%S\" --pretty=format:\"%cd -> author: %<(10,trunc)%an, message: %s\" > \".\\change.log\" -{count}");
-                    Thread.Sleep(10);
+                    while (!File.Exists($"{workspacePath}\\change.log")) Thread.Sleep(10);
 
                     process.StandardInput.WriteLine($"git add change.log");
                     process.StandardInput.WriteLine($"git commit --amend --no-edit");
