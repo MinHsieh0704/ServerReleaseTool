@@ -26,7 +26,7 @@ namespace ServerReleaseTool
         static Log LogService { get; set; } = null;
 
         [STAThread]
-        static int Main(string[] args)
+        static void Main(string[] args)
         {
             Thread.CurrentThread.CurrentCulture = new CultureInfo("en");
             Thread.CurrentThread.CurrentUICulture = new CultureInfo("en");
@@ -43,7 +43,7 @@ namespace ServerReleaseTool
 
                 FolderBrowserDialog dialog = new FolderBrowserDialog();
                 if (dialog.ShowDialog() != DialogResult.OK)
-                    return 0;
+                    return;
 
                 string basePath = dialog.SelectedPath;
                 string workspacePath = $"{basePath}\\workspace";
@@ -415,8 +415,6 @@ namespace ServerReleaseTool
 
                 Environment.Exit(0);
             }
-
-            return 0;
         }
     }
 }
