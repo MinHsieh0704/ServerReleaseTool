@@ -112,7 +112,7 @@ namespace ServerReleaseTool
                         if (input["name"] != null) input["name"] = projectName;
                         if (input["version"] != null) input["version"] = projectNewVersion;
                         if (input["config"]?["displayname"] != null) input["config"]["displayname"] = projectDisplayName;
-                        if (input["description"] != null) input["description"] = $"{projectDisplayName} v{projectNewVersion}";
+                        if (input["description"] != null) input["description"] = projectDisplayName;
 
                         File.WriteAllText(paths[i], JsonConvert.SerializeObject(input, Formatting.Indented));
 
