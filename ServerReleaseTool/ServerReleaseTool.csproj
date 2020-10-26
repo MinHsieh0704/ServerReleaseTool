@@ -19,7 +19,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\ServerReleaseTool\</OutputPath>
+    <OutputPath>bin\Debug\ServerReleaseTool\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -28,7 +28,7 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\ServerReleaseTool\</OutputPath>
+    <OutputPath>bin\Release\ServerReleaseTool\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -85,4 +85,14 @@
     <Content Include="icon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>cd $(ProjectDir)
+rmdir /Q /S $(ProjectDir)$(OutDir)</PreBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PostBuildEvent>cd $(ProjectDir)libs
+for /R %25%25i in (.) do (robocopy %25%25i $(ProjectDir)$(OutDir) *.dll /xo)
+IF %25ERRORLEVEL%25 LEQ 7 exit /b 0
+Rem ELSE exit /b 1</PostBuildEvent>
+  </PropertyGroup>
 </Project>
