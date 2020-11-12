@@ -215,6 +215,10 @@ namespace ServerReleaseTool
                     process.StandardInput.WriteLine($"git commit --amend --no-edit");
                     Thread.Sleep(10);
 
+                    process.StandardInput.WriteLine($"exit");
+
+                    process.WaitForExit();
+
                     PrintService.WriteLine($"Git Log Export Success", Print.EMode.success);
                 }
 
