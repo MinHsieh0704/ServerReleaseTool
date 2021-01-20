@@ -114,7 +114,7 @@ namespace ServerReleaseTool
                         if (input["config"]?["displayname"] != null) input["config"]["displayname"] = projectDisplayName;
                         if (input["description"] != null) input["description"] = projectDisplayName;
 
-                        File.WriteAllText(paths[i], JsonConvert.SerializeObject(input, Formatting.Indented));
+                        File.WriteAllText(paths[i], JsonConvert.SerializeObject(input, Formatting.Indented) + "\n");
 
                         PrintService.WriteLine($"Update \"{path}\" Success", Print.EMode.success);
                     }
@@ -137,7 +137,7 @@ namespace ServerReleaseTool
 
                             string content = new Regex($"^!define PRODUCT_VERSION .*$", RegexOptions.Multiline | RegexOptions.IgnoreCase).Replace(input, $"!define PRODUCT_VERSION \"{projectNewVersion}\"", 1);
 
-                            File.WriteAllText(paths[i], content);
+                            File.WriteAllText(paths[i], content + "\n");
                             PrintService.WriteLine($"Update \"{path}\" Success", Print.EMode.success);
                         }
                     }
@@ -162,7 +162,7 @@ namespace ServerReleaseTool
                             content = new Regex($"^set displayName=.*$", RegexOptions.Multiline | RegexOptions.IgnoreCase).Replace(content, $"set displayName={projectDisplayName}", 1);
                             content = new Regex($"^set description=.*$", RegexOptions.Multiline | RegexOptions.IgnoreCase).Replace(content, $"set description={projectDisplayName} v{projectNewVersion}", 1);
 
-                            File.WriteAllText(paths[i], content);
+                            File.WriteAllText(paths[i], content + "\n");
                             PrintService.WriteLine($"Update \"{path}\" Success", Print.EMode.success);
                         }
                     }
